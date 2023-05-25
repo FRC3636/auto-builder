@@ -1,4 +1,12 @@
 <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
+  <block type="intake">
+    <field name="index">1</field>
+    <value name="target">
+      <block type="gamePiece">
+        <field name="pieceName">cone</field>
+      </block>
+    </value>
+  </block>
   <block type="score">
     <field name="level">high</field>
     <field name="column">cone_left</field>
@@ -8,7 +16,6 @@
       </block>
     </value>
   </block>
-  <block type="balance"></block>
   <block type="wait">
     <value name="time">
       <block type="math_number">
@@ -16,12 +23,5 @@
       </block>
     </value>
   </block>
-  <block type="intake">
-    <field name="index">1</field>
-    <value name="target">
-      <block type="gamePiece">
-        <field name="pieceName">cone</field>
-      </block>
-    </value>
-  </block>
+  <block type="balance"></block>
 </xml>
