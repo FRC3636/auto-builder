@@ -18,10 +18,7 @@
     import Blockly from "blockly";
     import theme from "@blockly/theme-modern";
     import toolbox from "../toolbox.xml?raw";
-
-    theme.categoryStyles.robot_category = {
-        colour: "#edab26",
-    };
+    import blockToCommands from "../block-to-commands";
 
     theme.blockStyles.robot_blocks = {
         colourPrimary: "#edab26",
@@ -29,6 +26,12 @@
         colourTertiary: "#c68b00",
         hat: "normal",
     };
+
+    const directions: Blockly.MenuOption[] = [
+        ["Left ⬅︎", "LEFT"],
+        ["Middle ●", "MID"],
+        ["Right ➡︎", "RIGHT"],
+    ];
 
     Blockly.Blocks["autonomous_begin"] = {
         init(this: Blockly.Block) {
@@ -48,14 +51,7 @@
                 .appendField("Pick up the");
             this.appendDummyInput()
                 .appendField("from the")
-                .appendField(
-                    new Blockly.FieldDropdown([
-                        ["left", "1"],
-                        ["middle", "2"],
-                        ["right", "3"],
-                    ]),
-                    "ID"
-                );
+                .appendField(new Blockly.FieldDropdown(directions), "ID");
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
@@ -74,21 +70,14 @@
                 .appendField("at the")
                 .appendField(
                     new Blockly.FieldDropdown([
-                        ["Top", "HIGH"],
-                        ["Middle", "MID"],
-                        ["Lowest", "LOW"],
+                        ["Top ⬆︎", "HIGH"],
+                        ["Middle ●", "MID"],
+                        ["Lowest ⬇︎", "LOW"],
                     ]),
                     "ROW"
                 )
                 .appendField("on the")
-                .appendField(
-                    new Blockly.FieldDropdown([
-                        ["Left", "LEFT"],
-                        ["Middle", "MID"],
-                        ["Right", "RIGHT"],
-                    ]),
-                    "ROW"
-                )
+                .appendField(new Blockly.FieldDropdown(directions), "COL")
                 .appendField("side");
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
@@ -165,6 +154,28 @@
         { type: "autonomous_begin", x: 150, y: 50 },
         workspace
     );
+
+    Blockly.ContextMenuRegistry.registry.register({
+        displayText() {
+            return "Export";
+        },
+        scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
+        id: "export",
+        weight: 0,
+        callback() {
+            let block = workspace.getBlocksByType(
+                "autonomous_begin",
+                false
+            )[0]!;
+            const json = blockToCommands(
+                Blockly.serialization.blocks.save(block)
+            );
+            navigator.clipboard.writeText(JSON.stringify(json)).catch(alert);
+        },
+        preconditionFn() {
+            return "enabled";
+        },
+    });
 
     const onresize = () => {
         Blockly.svgResize(workspace);
