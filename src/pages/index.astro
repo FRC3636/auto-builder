@@ -19,20 +19,126 @@
     import theme from "@blockly/theme-modern";
     import toolbox from "../toolbox.xml?raw";
 
-    Blockly.Blocks['intake_game_piece'] = {
-      init: function(this: Blockly.Block) {
-        this.appendDummyInput()
-            .appendField('Pick up');
-        this.appendValueInput('GAME_PIECE')
-            .setCheck('GamePiece')
-            .appendField('Game Piece');
-        this.setOutput(true, 'Number');
-        this.setColour(160);
-        this.setTooltip('Returns number of letters in the provided text.');
-        this.setHelpUrl('http://www.w3schools.com/jsref/jsref_length_string.asp');
-      }
+    theme.categoryStyles.robot_category = {
+        colour: "#edab26",
     };
 
+    theme.blockStyles.robot_blocks = {
+        colourPrimary: "#edab26",
+        colourSecondary: "#e0a000",
+        colourTertiary: "#c68b00",
+        hat: "normal",
+    };
+
+    Blockly.Blocks["autonomous_begin"] = {
+        init(this: Blockly.Block) {
+            this.setDeletable(false);
+            //this.setMovable(false);
+            //this.setEditable(false);
+            this.appendDummyInput().appendField("When Robot Enabled...");
+            this.setNextStatement(true, null);
+            this.setStyle("hat_blocks");
+        },
+    };
+
+    Blockly.Blocks["intake"] = {
+        init(this: Blockly.Block) {
+            this.appendValueInput("NAME")
+                .setCheck("GamePiece")
+                .appendField("Pick up the");
+            this.appendDummyInput()
+                .appendField("from the")
+                .appendField(
+                    new Blockly.FieldDropdown([
+                        ["left", "1"],
+                        ["middle", "2"],
+                        ["right", "3"],
+                    ]),
+                    "ID"
+                );
+            this.setInputsInline(true);
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setStyle("robot_blocks");
+            this.setTooltip("Drive to and pick up a cone or cube.");
+            this.setMovable(true);
+        },
+    };
+
+    Blockly.Blocks["score"] = {
+        init(this: Blockly.Block) {
+            this.appendValueInput("NAME")
+                .setCheck("GamePiece")
+                .appendField("Score");
+            this.appendDummyInput()
+                .appendField("at the")
+                .appendField(
+                    new Blockly.FieldDropdown([
+                        ["Top", "HIGH"],
+                        ["Middle", "MID"],
+                        ["Lowest", "LOW"],
+                    ]),
+                    "ROW"
+                )
+                .appendField("on the")
+                .appendField(
+                    new Blockly.FieldDropdown([
+                        ["Left", "LEFT"],
+                        ["Middle", "MID"],
+                        ["Right", "RIGHT"],
+                    ]),
+                    "ROW"
+                )
+                .appendField("side");
+            this.setInputsInline(true);
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setStyle("robot_blocks");
+            this.setTooltip("Score a cone or cube.");
+            this.setMovable(true);
+        },
+    };
+
+    Blockly.Blocks["balance"] = {
+        init(this: Blockly.Block) {
+            this.appendDummyInput().appendField("Balance on platform");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setStyle("robot_blocks");
+            this.setMovable(true);
+        },
+    };
+
+    Blockly.Blocks["wait"] = {
+        init(this: Blockly.Block) {
+            this.appendValueInput("NAME")
+                .setCheck(null)
+                .appendField("Pause for");
+            this.appendDummyInput().appendField("seconds");
+            this.setPreviousStatement(true, null);
+            this.setNextStatement(true, null);
+            this.setStyle("robot_blocks");
+            this.setTooltip(
+                "Pause the program for a specified amount of time."
+            );
+            this.setMovable(true);
+        },
+    };
+
+    Blockly.Blocks["game_piece"] = {
+        init(this: Blockly.Block) {
+            this.appendDummyInput().appendField(
+                new Blockly.FieldDropdown([
+                    ["Cone", "CONE"],
+                    ["Cube", "CUBE"],
+                ]),
+                "GAME_PIECE"
+            );
+            this.setOutput(true, null);
+            this.setStyle("variable_blocks");
+            this.setMovable(true);
+        },
+    };
 
     const blocklyDiv = document.getElementById("blockly")!;
     const workspace = Blockly.inject(blocklyDiv, {
@@ -53,8 +159,13 @@
             controls: true,
             wheel: true,
         },
-
     });
+
+    Blockly.serialization.blocks.append(
+        { type: "autonomous_begin", x: 150, y: 50 },
+        workspace
+    );
+
     const onresize = () => {
         Blockly.svgResize(workspace);
     };
