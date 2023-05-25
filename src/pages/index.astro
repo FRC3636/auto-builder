@@ -2,14 +2,62 @@
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>3636 Auto Planner</title>
+    </head>
+    <body>
+        <div id="blockly" class="absolute inset-0"></div>
+    </body>
 </html>
+
+<script>
+    import Blockly from "blockly";
+    import theme from "@blockly/theme-modern";
+    import toolbox from "../toolbox.xml?raw";
+
+    Blockly.Blocks['intake_game_piece'] = {
+      init: function(this: Blockly.Block) {
+        this.appendDummyInput()
+            .appendField('Pick up');
+        this.appendValueInput('GAME_PIECE')
+            .setCheck('GamePiece')
+            .appendField('Game Piece');
+        this.setOutput(true, 'Number');
+        this.setColour(160);
+        this.setTooltip('Returns number of letters in the provided text.');
+        this.setHelpUrl('http://www.w3schools.com/jsref/jsref_length_string.asp');
+      }
+    };
+
+
+    const blocklyDiv = document.getElementById("blockly")!;
+    const workspace = Blockly.inject(blocklyDiv, {
+        toolbox,
+        theme,
+        renderer: "zelos",
+        trashcan: true,
+        sounds: true,
+        collapse: true,
+        scrollbars: true,
+        grid: {
+            spacing: 25,
+            length: 3,
+            colour: "#ccc",
+            snap: true,
+        },
+        zoom: {
+            controls: true,
+            wheel: true,
+        },
+
+    });
+    const onresize = () => {
+        Blockly.svgResize(workspace);
+    };
+    window.addEventListener("resize", onresize, false);
+    onresize();
+</script>
