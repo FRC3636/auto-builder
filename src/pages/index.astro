@@ -18,22 +18,16 @@
     import Blockly from "blockly";
     import theme from "@blockly/theme-modern";
     import toolbox from "../toolbox.xml?raw";
-    import blockToCommands from "../block-to-commands";
+    import transpile from "../compile";
 
-    theme.blockStyles.robot_blocks = {
+    theme.blockStyles["robot_blocks"] = {
         colourPrimary: "#edab26",
         colourSecondary: "#e0a000",
         colourTertiary: "#c68b00",
         hat: "normal",
     };
 
-    const directions: Blockly.MenuOption[] = [
-        ["Left ⬅︎", "LEFT"],
-        ["Middle ●", "MID"],
-        ["Right ➡︎", "RIGHT"],
-    ];
-
-    Blockly.Blocks["autonomous_begin"] = {
+    Blockly.Blocks.autonomousBegin = {
         init(this: Blockly.Block) {
             this.setDeletable(false);
             //this.setMovable(false);
@@ -46,12 +40,17 @@
 
     Blockly.Blocks["intake"] = {
         init(this: Blockly.Block) {
-            this.appendValueInput("NAME")
-                .setCheck("GamePiece")
-                .appendField("Pick up the");
+            this.appendValueInput("target").appendField("Pick up the");
             this.appendDummyInput()
                 .appendField("from the")
-                .appendField(new Blockly.FieldDropdown(directions), "ID");
+                .appendField(
+                    new Blockly.FieldDropdown([
+                        ["Left ⬅︎", "1"],
+                        ["Middle ●", "2"],
+                        ["Right ➡︎", "3"],
+                    ]),
+                    "index"
+                );
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
@@ -63,21 +62,28 @@
 
     Blockly.Blocks["score"] = {
         init(this: Blockly.Block) {
-            this.appendValueInput("NAME")
+            this.appendValueInput("target")
                 .setCheck("GamePiece")
                 .appendField("Score");
             this.appendDummyInput()
                 .appendField("at the")
                 .appendField(
                     new Blockly.FieldDropdown([
-                        ["Top ⬆︎", "HIGH"],
-                        ["Middle ●", "MID"],
-                        ["Lowest ⬇︎", "LOW"],
+                        ["Top ⬆︎", "high"],
+                        ["Middle ●", "mid"],
+                        ["Lowest ⬇︎", "low"],
                     ]),
-                    "ROW"
+                    "level"
                 )
                 .appendField("on the")
-                .appendField(new Blockly.FieldDropdown(directions), "COL")
+                .appendField(
+                    new Blockly.FieldDropdown([
+                        ["Left ⬅︎", "cone_left"],
+                        ["Middle ●", "cube"],
+                        ["Right ➡︎", "cone_right"],
+                    ]),
+                    "column"
+                )
                 .appendField("side");
             this.setInputsInline(true);
             this.setPreviousStatement(true, null);
@@ -100,8 +106,8 @@
 
     Blockly.Blocks["wait"] = {
         init(this: Blockly.Block) {
-            this.appendValueInput("NAME")
-                .setCheck(null)
+            this.appendValueInput("time")
+                .setCheck("Number")
                 .appendField("Pause for");
             this.appendDummyInput().appendField("seconds");
             this.setPreviousStatement(true, null);
@@ -114,14 +120,14 @@
         },
     };
 
-    Blockly.Blocks["game_piece"] = {
+    Blockly.Blocks["gamePiece"] = {
         init(this: Blockly.Block) {
             this.appendDummyInput().appendField(
                 new Blockly.FieldDropdown([
-                    ["Cone", "CONE"],
-                    ["Cube", "CUBE"],
+                    ["Cone", "cone"],
+                    ["Cube", "cube"],
                 ]),
-                "GAME_PIECE"
+                "pieceName"
             );
             this.setOutput(true, null);
             this.setStyle("variable_blocks");
@@ -151,7 +157,7 @@
     });
 
     Blockly.serialization.blocks.append(
-        { type: "autonomous_begin", x: 150, y: 50 },
+        { type: "autonomousBegin", x: 150, y: 50 },
         workspace
     );
 
@@ -163,14 +169,12 @@
         id: "export",
         weight: 0,
         callback() {
-            let block = workspace.getBlocksByType(
-                "autonomous_begin",
-                false
-            )[0]!;
-            const json = blockToCommands(
-                Blockly.serialization.blocks.save(block)
+            let block = workspace.getBlocksByType("autonomousBegin", false)[0]!;
+            const code = transpile(
+                Blockly.serialization.blocks.save(block) ?? undefined
             );
-            navigator.clipboard.writeText(JSON.stringify(json)).catch(alert);
+            console.log(code);
+            navigator.clipboard.writeText(code).catch(alert);
         },
         preconditionFn() {
             return "enabled";

@@ -1,26 +1,26 @@
 <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
   <block type="score">
-    <field name="ROW">HIGH</field>
-    <field name="COL">LEFT</field>
-    <value name="NAME">
-      <block type="game_piece">
-        <field name="GAME_PIECE">CONE</field>
+    <field name="level">high</field>
+    <field name="column">cone_left</field>
+    <value name="target">
+      <block type="gamePiece">
+        <field name="pieceName">cone</field>
       </block>
     </value>
   </block>
   <block type="balance"></block>
   <block type="wait">
-    <value name="NAME">
+    <value name="time">
       <block type="math_number">
         <field name="NUM">5</field>
       </block>
     </value>
   </block>
   <block type="intake">
-    <field name="ID">LEFT</field>
-    <value name="NAME">
-      <block type="game_piece">
-        <field name="GAME_PIECE">CONE</field>
+    <field name="index">1</field>
+    <value name="target">
+      <block type="gamePiece">
+        <field name="pieceName">cone</field>
       </block>
     </value>
   </block>

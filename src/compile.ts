@@ -1,4 +1,5 @@
 /*
+Example block format:
 {
     "type": "autonomous_begin",
     "id": "J3LmHw`1;=auU]@=4u}d",
@@ -68,21 +69,51 @@
         }
     }
 }
+
+Example intermediate format:
+[{"type":"score","row":"HIGH","col":"LEFT","gamePiece":"CONE"},{"type":"wait","time":5}]
 */
 
-export default function blockToCommands(block: any): any {
-    const commands = [];
-    debugger;
+import type Blockly from "blockly";
+
+export type NodeLevel = "low" | "mid" | "high";
+export type NodeColumn = "cone_left" | "cube" | "cone_right";
+export type GamePiece = "cone" | "cube";
+
+type Command =
+    | {
+          type: "score";
+          level: NodeLevel;
+          column: NodeColumn;
+          gamePiece: GamePiece;
+      }
+    | {
+          type: "balance";
+      }
+    | {
+          type: "wait";
+          time: number;
+      }
+    | {
+          type: "intake";
+          index: string;
+          gamePiece: GamePiece;
+      };
+
+export function simplifyBlock(
+    block?: Blockly.serialization.blocks.State
+): Command[] {
+    const commands: Command[] = [];
     while ((block = block?.next?.block)) {
         switch (block.type) {
             case "score": {
-                const { ROW, COL } = block.fields;
-                const { GAME_PIECE } = block.inputs.NAME.block.fields;
+                const { level, column } = block.fields!;
+                const { pieceName } = block.inputs!.target!.block!.fields!;
                 commands.push({
                     type: "score",
-                    row: ROW,
-                    col: COL,
-                    gamePiece: GAME_PIECE,
+                    level,
+                    column,
+                    gamePiece: pieceName,
                 });
                 break;
             }
@@ -93,7 +124,7 @@ export default function blockToCommands(block: any): any {
                 break;
             }
             case "wait": {
-                const { NUM } = block.inputs.NAME.block.fields;
+                const { NUM } = block.inputs!.time!.block!.fields!;
                 commands.push({
                     type: "wait",
                     time: NUM,
@@ -101,16 +132,59 @@ export default function blockToCommands(block: any): any {
                 break;
             }
             case "intake": {
-                const { ID } = block.fields;
-                const { GAME_PIECE } = block.inputs.NAME.block.fields;
+                const { index } = block.fields!;
+                const { pieceName } = block.inputs!.target!.block!.fields!;
                 commands.push({
                     type: "intake",
-                    id: ID,
-                    gamePiece: GAME_PIECE,
+                    index,
+                    gamePiece: pieceName,
                 });
                 break;
             }
         }
     }
     return commands;
+}
+
+const GRID_NUM = 1; // left, mid, and right grids - each grid is 3x3 but at outreach we usually only have 1 grid
+
+export default function transpile(
+    block?: Blockly.serialization.blocks.State
+): string {
+    console.debug(JSON.stringify(block));
+    const commands = simplifyBlock(block);
+    console.debug(JSON.stringify(commands));
+    let statements: string[][] = [];
+
+    for (const command of commands) {
+        switch (command.type) {
+            case "score": {
+                const { level, column, gamePiece } = command;
+                statements.push([
+                    command.type,
+                    gamePiece,
+                    String(GRID_NUM),
+                    level,
+                    column,
+                ]);
+                break;
+            }
+            case "balance": {
+                statements.push([command.type]);
+                break;
+            }
+            case "wait": {
+                const { time } = command;
+                statements.push([command.type, String(time)]);
+                break;
+            }
+            case "intake": {
+                const { gamePiece, index } = command;
+                statements.push([command.type, gamePiece, index]);
+                break;
+            }
+        }
+    }
+
+    return statements.map((statement) => statement.join(" ")).join(";");
 }
